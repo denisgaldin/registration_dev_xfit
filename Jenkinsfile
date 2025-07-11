@@ -2,54 +2,46 @@ pipeline {
     agent any
 
     environment {
-        DOTENV_PATH = '.env'
+        BASE_URL = 'https://dev-mobile.xfit.ru'  // URL твоего API
     }
 
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                git url: 'https://github.com/your/repo.git', branch: 'main'  // замени на свой репозиторий
             }
         }
 
         stage('Setup Python') {
             steps {
-                sh '''
-                python3 -m venv $PYTHON_ENV
-                source $PYTHON_ENV/bin/activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
+                sh 'python3 -m venv venv'
+                sh '. venv/bin/activate && pip install --upgrade pip'
+                sh '. venv/bin/activate && pip install -r requirements.txt'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '''
-                source $PYTHON_ENV/bin/activate
-                # Загружаем переменные из .env в окружение
-                export $(grep -v '^#' $DOTENV_PATH | xargs)
-                pytest tests/ --tb=short -v --junitxml=reports/results.xml
-                '''
+                sh '. venv/bin/activate && pytest tests/ --junitxml=report.xml -v'
             }
             post {
                 always {
-                    junit 'reports/results.xml'
-                    archiveArtifacts artifacts: 'reports/*.xml', allowEmptyArchive: true
+                    junit 'report.xml'  // публикация отчётов JUnit
+                    archiveArtifacts artifacts: 'report.xml', allowEmptyArchive: true
                 }
             }
         }
     }
 
     post {
-        always {
-            echo 'Pipeline finished'
-        }
         success {
-            echo 'Тесты прошли успешно!'
+            echo '✅ Тесты успешно прошли!'
         }
         failure {
-            echo 'Тесты упали!'
+            echo '❌ Тесты упали!'
+        }
+        always {
+            echo 'Пайплайн завершён.'
         }
     }
 }
