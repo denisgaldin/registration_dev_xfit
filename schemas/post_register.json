@@ -1,0 +1,88 @@
+{
+  "type": "object",
+  "properties": {
+    "result": {
+      "type": "object",
+      "properties": {
+        "user": {
+          "type": "object",
+          "properties": {
+            "guid": {
+              "type": "string"
+            },
+            "isRegistered": {
+              "type": "boolean"
+            },
+            "phone": {
+              "type": "object",
+              "properties": {
+                "countryCode": {
+                  "type": "string"
+                },
+                "number": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "countryCode",
+                "number"
+              ]
+            },
+            "name": {
+              "type": "string"
+            },
+            "patronymic": {
+              "type": "string"
+            },
+            "surname": {
+              "type": "string"
+            },
+            "gender": {
+              "type": "integer"
+            },
+            "photoUrl": {
+              "type": "string"
+            },
+            "isVerified": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "guid",
+            "isRegistered",
+            "phone",
+            "name",
+            "isVerified"
+          ]
+        },
+        "access": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string"
+            },
+            "expire": {
+              "type": "string",
+              "format": "date-time"
+            },
+            "refresh": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "token",
+            "expire",
+            "refresh"
+          ]
+        }
+      },
+      "required": [
+        "user",
+        "access"
+      ]
+    }
+  },
+  "required": [
+    "result"
+  ]
+}
