@@ -2,32 +2,54 @@ pipeline {
     agent any
 
     environment {
-        BASE_URL = 'https://dev-mobile.xfit.ru'  //
+        DOTENV_PATH = '.env'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/your/repo.git', branch: 'main'  // замени на свой
+                checkout scm
             }
         }
 
         stage('Setup Python') {
             steps {
-                sh 'python3 -m venv venv'
-                sh '. venv/bin/activate && pip install -r requirements.txt'
+                sh '''
+                python3 -m venv $PYTHON_ENV
+                source $PYTHON_ENV/bin/activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh '. venv/bin/activate && pytest tests/ --junitxml=report.xml'
+                sh '''
+                source $PYTHON_ENV/bin/activate
+                # Загружаем переменные из .env в окружение
+                export $(grep -v '^#' $DOTENV_PATH | xargs)
+                pytest tests/ --tb=short -v --junitxml=reports/results.xml
+                '''
             }
             post {
                 always {
-                    junit 'report.xml'  // для отображения результатов тестов в Jenkins
+                    junit 'reports/results.xml'
+                    archiveArtifacts artifacts: 'reports/*.xml', allowEmptyArchive: true
                 }
             }
+        }
+    }
+
+    post {
+        always {
+            echo 'Pipeline finished'
+        }
+        success {
+            echo 'Тесты прошли успешно!'
+        }
+        failure {
+            echo 'Тесты упали!'
         }
     }
 }
