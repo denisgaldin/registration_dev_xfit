@@ -8,7 +8,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/your/repo.git', branch: 'main'  // Укажи свой репо
+                git url: 'https://github.com/denisgaldin/registration_dev_xfit', branch: 'main'
             }
         }
 
