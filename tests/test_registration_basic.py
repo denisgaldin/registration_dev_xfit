@@ -29,15 +29,12 @@ def test_successful_registration():
 
     send_payload = {"phone": phone}
     send_response = requests.post(send_code_url, headers=headers, json=send_payload)
-    print(f"📡 Ответ на отправку кода (status {send_response.status_code}): {send_response.text}")
     assert send_response.status_code == 200, "Не удалось отправить код"
 
     send_data = send_response.json()
     token = send_data.get("result", {}).get("token")
-
     assert token, "token отсутствует в ответе"
 
-    # TODO: Подставь здесь реальный verificationCode, который приходит в тестовом окружении
     verification_code = "1234"
 
     register_payload = {
@@ -49,8 +46,45 @@ def test_successful_registration():
     }
 
     response = requests.post(register_url, headers=headers, json=register_payload)
-
-    print(f"📡 Status Code: {response.status_code}")
-    print(f"📨 Response Body: {response.text}")
-
     assert response.status_code == 200, f"❌ Ожидали 200, получили {response.status_code}"
+
+    data = response.json()
+    assert "result" in data, "В ответе нет поля result"
+    user = data["result"].get("user")
+    assert user is not None, "В ответе нет информации о пользователе"
+    assert user.get("name") == "Тестовый", "Имя пользователя не совпадает"
+
+    access = data["result"].get("access")
+    assert access is not None, "В ответе нет информации о токене доступа"
+    assert "token" in access, "В ответе нет access.token"
+    assert "expire" in access, "В ответе нет access.expire"
+    assert "refresh" in access, "В ответе нет access.refresh"
+
+
+def test_registration_with_wrong_code():
+    phone = generate_unique_phone()
+
+    send_payload = {"phone": phone}
+    send_response = requests.post(send_code_url, headers=headers, json=send_payload)
+    assert send_response.status_code == 200, "Не удалось отправить код"
+
+    send_data = send_response.json()
+    token = send_data.get("result", {}).get("token")
+    assert token, "token отсутствует в ответе"
+
+    wrong_code = "1233"
+    payload = {
+        "token": token,
+        "verificationCode": wrong_code,
+        "user": {
+            "name": "Тестовый"
+        }
+    }
+
+    response = requests.post(register_url, headers=headers, json=payload)
+    assert response.status_code == 403, f"❌ Ожидали 403, получили {response.status_code}"
+
+    data = response.json()
+    error = data.get("error")
+    assert error is not None, "В ответе нет поля error"
+    assert all(k in error for k in ("type", "message", "debugMessage")), "Ошибка не содержит нужных полей"
