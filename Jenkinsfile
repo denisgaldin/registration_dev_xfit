@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     environment {
-        BASE_URL = 'https://dev-mobile.xfit.ru'  // URL твоего API
+        BASE_URL = 'https://dev-mobile.xfit.ru'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git url: 'https://github.com/your/repo.git', branch: 'main'  // замени на свой репозиторий
+                git url: 'https://github.com/your/repo.git', branch: 'main'  // Укажи свой репо
             }
         }
 
@@ -26,7 +26,7 @@ pipeline {
             }
             post {
                 always {
-                    junit 'report.xml'  // публикация отчётов JUnit
+                    junit 'report.xml'
                     archiveArtifacts artifacts: 'report.xml', allowEmptyArchive: true
                 }
             }
