@@ -29,11 +29,13 @@ def test_successful_registration():
 
     send_payload = {"phone": phone}
     send_response = requests.post(send_code_url, headers=headers, json=send_payload)
-    assert send_response.status_code == 200, "Не удалось отправить код"
+
+    print(f"📡 Ответ на отправку кода: {send_response.status_code} - {send_response.text}")
+    assert send_response.status_code == 200, "❌ Не удалось отправить код"
 
     send_data = send_response.json()
     token = send_data.get("result", {}).get("token")
-    assert token, "token отсутствует в ответе"
+    assert token, "❌ token отсутствует в ответе"
 
     verification_code = "1234"
 
@@ -46,19 +48,22 @@ def test_successful_registration():
     }
 
     response = requests.post(register_url, headers=headers, json=register_payload)
+
+    print(f"📨 Ответ на регистрацию: {response.status_code} - {response.text}")
     assert response.status_code == 200, f"❌ Ожидали 200, получили {response.status_code}"
 
     data = response.json()
-    assert "result" in data, "В ответе нет поля result"
+    assert "result" in data, "❌ В ответе нет поля result"
+
     user = data["result"].get("user")
-    assert user is not None, "В ответе нет информации о пользователе"
-    assert user.get("name") == "Тестовый", "Имя пользователя не совпадает"
+    assert user is not None, "❌ В ответе нет информации о пользователе"
+    assert user.get("name") == "Тестовый", "❌ Имя пользователя не совпадает"
 
     access = data["result"].get("access")
-    assert access is not None, "В ответе нет информации о токене доступа"
-    assert "token" in access, "В ответе нет access.token"
-    assert "expire" in access, "В ответе нет access.expire"
-    assert "refresh" in access, "В ответе нет access.refresh"
+    assert access is not None, "❌ В ответе нет информации о токене доступа"
+    assert "token" in access, "❌ В ответе нет access.token"
+    assert "expire" in access, "❌ В ответе нет access.expire"
+    assert "refresh" in access, "❌ В ответе нет access.refresh"
 
 
 def test_registration_with_wrong_code():
@@ -66,11 +71,13 @@ def test_registration_with_wrong_code():
 
     send_payload = {"phone": phone}
     send_response = requests.post(send_code_url, headers=headers, json=send_payload)
-    assert send_response.status_code == 200, "Не удалось отправить код"
+
+    print(f"📡 Ответ на отправку кода: {send_response.status_code} - {send_response.text}")
+    assert send_response.status_code == 200, "❌ Не удалось отправить код"
 
     send_data = send_response.json()
     token = send_data.get("result", {}).get("token")
-    assert token, "token отсутствует в ответе"
+    assert token, "❌ token отсутствует в ответе"
 
     wrong_code = "1233"
     payload = {
@@ -82,9 +89,11 @@ def test_registration_with_wrong_code():
     }
 
     response = requests.post(register_url, headers=headers, json=payload)
+
+    print(f"📨 Ответ с неверным кодом: {response.status_code} - {response.text}")
     assert response.status_code == 403, f"❌ Ожидали 403, получили {response.status_code}"
 
     data = response.json()
     error = data.get("error")
-    assert error is not None, "В ответе нет поля error"
-    assert all(k in error for k in ("type", "message", "debugMessage")), "Ошибка не содержит нужных полей"
+    assert error is not None, "❌ В ответе нет поля error"
+    assert all(k in error for k in ("type", "message", "debugMessage")), "❌ Ошибка не содержит нужных полей"
